@@ -2,13 +2,34 @@ import { Button, Box } from '@chakra-ui/react';
 import { useMemo } from 'react';
 import { useInfiniteQuery } from 'react-query';
 
+import { ImagesQueryResponse } from './api/images';
+
 import { Header } from '../components/Header';
 import { CardList } from '../components/CardList';
 import { api } from '../services/api';
 import { Loading } from '../components/Loading';
 import { Error } from '../components/Error';
 
+interface ImageListProps {
+  after: number | null;
+  data: {
+    description: string;
+    id: string;
+    title: string;
+    ts: number;
+    url: string;
+  }[];
+}
+
 export default function Home(): JSX.Element {
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  async function fetchInfinityImages({ pageParam = null }) {
+    const res = await api.get('/api/images', {
+      params: { after: pageParam },
+    });
+    return res.data;
+  }
+
   const {
     data,
     isLoading,
@@ -16,20 +37,42 @@ export default function Home(): JSX.Element {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteQuery(
-    'images',
-    // TODO AXIOS REQUEST WITH PARAM
-    ,
-    // TODO GET AND RETURN NEXT PAGE PARAM
-  );
+  } = useInfiniteQuery<ImageListProps>('images', fetchInfinityImages, {
+    getNextPageParam: (lastPage, pages) => {
+      if (lastPage.after) return lastPage.after;
+      return null;
+    },
+  });
+
+  console.log(data);
 
   const formattedData = useMemo(() => {
-    // TODO FORMAT AND FLAT DATA ARRAY
+    if (data && data.pages[0].data.length > 0) {
+      return data?.pages[0].data?.map(image => {
+        return {
+          title: image.title,
+          description: image.description,
+          url: image.url,
+          ts: image.ts,
+          id: image.id,
+        };
+      });
+    }
+
+    return [];
   }, [data]);
 
+  console.log(formattedData);
+
   // TODO RENDER LOADING SCREEN
+  if (isLoading || isFetchingNextPage) {
+    return <Loading />;
+  }
 
   // TODO RENDER ERROR SCREEN
+  if (isError || formattedData.length < 1) {
+    return <Error />;
+  }
 
   return (
     <>

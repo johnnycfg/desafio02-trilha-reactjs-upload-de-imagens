@@ -4,7 +4,7 @@ import fauna from 'faunadb';
 const { query } = fauna;
 const client = new fauna.Client({ secret: process.env.FAUNA_API_KEY });
 
-interface ImagesQueryResponse {
+export interface ImagesQueryResponse {
   after?: {
     id: string;
   };
@@ -26,7 +26,7 @@ export default async function handler(
   res: NextApiResponse
 ): Promise<void> {
   if (req.method === 'POST') {
-    const { url, title, description } = req.body;
+    const { url, title, description } = req.body.data;
 
     return client
       .query(

@@ -4,7 +4,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 
-import { AxiosResponse } from 'axios';
 import { api } from '../../services/api';
 import { FileInput } from '../Input/FileInput';
 import { TextInput } from '../Input/TextInput';
